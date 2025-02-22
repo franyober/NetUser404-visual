@@ -74,6 +74,6 @@ def update_status_codes_count_div(n):
 
 # Run the app
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run_server(host= '0.0.0.0',debug=False)
 
 #Test
