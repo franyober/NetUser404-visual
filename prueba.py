@@ -13,22 +13,31 @@ def count_status_codes(date):
     count_codes = r.json()
     return count_codes
 
+def delays_5min(date):
+    PARAMS = {"date": date}
+    r = requests.get(f'{api_url}/metrics/delay', params=PARAMS)
+    delays = r.json()
+    return delays
+
+hoy = "2025-02-23"
+
 # Diseño de la página
 app.layout = [html.H1('Monitoreo de la red'), 
               dcc.DatePickerSingle(
                   id = "sel-date",
-                  date = "2025-02-23"
+                  date = hoy
               ),
-              dcc.Graph(id="graph")
+              dcc.Graph(id="piegraph-status"),
+              dcc.Graph(id="linegraph-delay")
              ]
 
 
-
+# Actualización del gráfico de la cantidad de códigos de estado
 @app.callback(
-        Output("graph", "figure"), # figure = graph
+        Output("piegraph-status", "figure"), # figure = graph
         Input("sel-date", "date")  # date = sel-date
 )
-def update_chart(selected_date):
+def update_pie_chart(selected_date):
     # Creando los gráficos
     codes = count_status_codes(selected_date)
     df = pd.DataFrame(codes)
@@ -39,6 +48,22 @@ def update_chart(selected_date):
     
     return fig
 
+# Callback para actualizar el gráfico de delay
+@app.callback(
+    Output("linegraph-delay", "figure"),
+    Input("sel-date", "date")
+)
+def update_line_chart(selected_date):
+    delays = delays_5min(selected_date)
+    df = pd.DataFrame(delays)
+
+    if df.empty:
+        fig = px.line(title="No hay datos de delay")
+    else:
+        df["time"] = pd.to_datetime(df["minute"], format="%H:%M")         
+        fig = px.line(df, x="time", y="avg_delay", markers=True, title=f"Latencia promedio cada 5 minutos en {selected_date}")
+    
+    return fig
 
 if __name__ == '__main__':
     app.run(debug=True)
