@@ -2,6 +2,7 @@ from dash import Dash, html, dcc, Input, Output
 import plotly.express as px
 import pandas as pd
 import requests
+from datetime import datetime
 
 app = Dash()
 
@@ -19,18 +20,23 @@ def delays_5min(date):
     delays = r.json()
     return delays
 
-hoy = "2025-02-23"
+hoy = datetime.now().strftime("%Y-%m-%d")
 
 # Diseño de la página
-app.layout = [html.H1('Monitoreo de la red'), 
-              dcc.DatePickerSingle(
-                  id = "sel-date",
-                  date = hoy
-              ),
-              dcc.Graph(id="piegraph-status"),
-              dcc.Graph(id="linegraph-delay")
-             ]
+app.layout = html.Div([
+    html.H1('Monitoreo de la red'),
 
+    dcc.DatePickerSingle(
+        id="sel-date",
+        date=hoy
+    ),
+
+    # Contenedor para colocar gráficos en dos columnas
+    html.Div([
+        html.Div(dcc.Graph(id="piegraph-status"), style={"width": "28%", "display": "inline-block"}),
+        html.Div(dcc.Graph(id="linegraph-delay"), style={"width": "68%", "display": "inline-block"})
+    ], style={"display": "flex", "justify-content": "space-between"})
+])
 
 # Actualización del gráfico de la cantidad de códigos de estado
 @app.callback(
