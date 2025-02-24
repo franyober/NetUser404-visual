@@ -1,79 +1,76 @@
-# Import packages
-from dash import Dash, html, dash_table, dcc, callback, Output, Input
-import pandas as pd
+from dash import Dash, html, dcc, Input, Output
 import plotly.express as px
+import pandas as pd
 import requests
+from datetime import datetime
 
-#API
-ip="192.168.192.94"
-port="8000"
-URL = f"http://{ip}:{port}"
-
-def update_status_codes_count(date):
-    PARAMS =  {"date": date} 
-    r = requests.get(f"{URL}/metrics/errors-count", params=PARAMS)
-    data_json = r.json()
-    return data_json
-
-# create the app
 app = Dash()
 
-# Iniciar la variable df con la fecha deseada
-df = update_status_codes_count("2025-02-16")
-df_g = pd.DataFrame(df)
+api_url = 'http://192.168.192.192:8000'
+# Peticiones al servidor
+def count_status_codes(date):
+    PARAMS = {"date": date}
+    r = requests.get(f'{api_url}/metrics/errors-count', params=PARAMS)
+    count_codes = r.json()
+    return count_codes
 
-# Crear el gráfico de pastel
-fig = px.pie(
-    df_g, 
-    values="count", 
-    names="status", 
-    title="Distribución de Códigos HTTP"
-)
+def delays_5min(date):
+    PARAMS = {"date": date}
+    r = requests.get(f'{api_url}/metrics/delay', params=PARAMS)
+    delays = r.json()
+    return delays
 
-# App layout
+hoy = datetime.now().strftime("%Y-%m-%d")
+
+# Diseño de la página
 app.layout = html.Div([
-    dcc.Interval(
-        id='interval',
-        disabled=False,
-        n_intervals=0,
-        interval=1000*10, # cada 10 seg 
-        max_intervals=100,
+    html.H1('Monitoreo de la red'),
+
+    dcc.DatePickerSingle(
+        id="sel-date",
+        date=hoy
     ),
+
+    # Contenedor para colocar gráficos en dos columnas
     html.Div([
-        html.Div(id="status", children="Esperando datos...")
-    ]),
-    dash_table.DataTable(id="status-table", data=df, page_size=10),
-    dcc.Graph(id="status-graph", figure=fig)
+        html.Div(dcc.Graph(id="piegraph-status"), style={"width": "28%", "display": "inline-block"}),
+        html.Div(dcc.Graph(id="linegraph-delay"), style={"width": "68%", "display": "inline-block"})
+    ], style={"display": "flex", "justify-content": "space-between"})
 ])
 
-# Callback para actualizar el estado y los gráficos
+# Actualización del gráfico de la cantidad de códigos de estado
 @app.callback(
-    [Output("status", "children"),
-     Output("status-table", "data"),
-     Output("status-graph", "figure")],
-    [Input("interval", "n_intervals")]
+        Output("piegraph-status", "figure"), # figure = graph
+        Input("sel-date", "date")  # date = sel-date
 )
-def update_status_codes_count_div(n):
-    # Actualizar la fecha según lo que desees
-    date = "2025-02-16"
+def update_pie_chart(selected_date):
+    # Creando los gráficos
+    codes = count_status_codes(selected_date)
+    df = pd.DataFrame(codes)
+    if df.empty:
+        fig = px.pie(title="No hay registros")
+    else:
+        fig = px.pie(df,values="count",names="status",title=f"Codigos de estado en {selected_date}")
     
-    # Obtener nuevos datos
-    data_json = update_status_codes_count(date)
-    df_g = pd.DataFrame(data_json)
-    
-    # Actualizar tabla y gráfico
-    fig = px.pie(
-        df_g, 
-        values="count", 
-        names="status", 
-        title="Distribución de Códigos HTTP"
-    )
-    
-    # Devolver los nuevos valores para la visualización
-    return f"Datos actualizados en: {date}", df_g.to_dict('records'), fig
+    return fig
 
-# Run the app
+# Callback para actualizar el gráfico de delay
+@app.callback(
+    Output("linegraph-delay", "figure"),
+    Input("sel-date", "date")
+)
+def update_line_chart(selected_date):
+    delays = delays_5min(selected_date)
+    df = pd.DataFrame(delays)
+
+    if df.empty:
+        fig = px.line(title="No hay datos de delay")
+    else:
+        df["time"] = pd.to_datetime(df["minute"], format="%H:%M")         
+        fig = px.line(df, x="time", y="avg_delay", markers=True, title=f"Latencia promedio cada 5 minutos en {selected_date}")
+    
+    return fig
+
 if __name__ == '__main__':
-    app.run_server(host= '0.0.0.0',debug=False)
+    app.run(debug=True)
 
-#Test
