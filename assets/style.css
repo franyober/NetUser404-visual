@@ -1,0 +1,209 @@
+/* ===== VARIABLES & BASE RESET ===== */
+:root {
+    --bg-primary: #0f0f13; /* Fondo principal más oscuro */
+    --bg-secondary: #1a1a23; /* Contenedores */
+    --bg-accent: #252535; /* Elementos destacados */
+    --primary: #3d7af5; /* Azul neón suave */
+    --primary-hover: #5d8ff7;
+    --text-primary: #f0f0f5;
+    --text-secondary: #b0b0c0;
+    --border: #3a3a4a;
+    --shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    color: var(--text-primary);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+  
+  /* ===== LAYOUT & BACKGROUND ===== */
+  html, body {
+    height: 100vh;
+    background: var(--bg-primary);
+    background-image: 
+      radial-gradient(at 20% 30%, rgba(61, 122, 245, 0.1) 0%, transparent 40%),
+      radial-gradient(at 80% 80%, rgba(200, 160, 255, 0.1) 0%, transparent 50%);
+    overflow-x: hidden;
+    font-size: 16px;
+    line-height: 1.6;
+  }
+  
+  /* ===== GRAPH CONTAINERS ===== */
+  .dash-graph {
+    background-color: var(--bg-secondary);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    transition: var(--transition);
+  }
+  
+  .dash-graph:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+  }
+  
+  /* ===== NAVIGATION ===== */
+  .app-brand {
+    font-size: 1.8rem;
+    font-weight: 600;
+    background: linear-gradient(135deg, var(--primary), #6dd5ff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    letter-spacing: -0.5px;
+  }
+  
+  .nav-pills .nav-link.active {
+    background: rgba(61, 122, 245, 0.15) !important;
+    border-left: 3px solid var(--primary);
+    backdrop-filter: blur(10px);
+  }
+  
+  /* ===== FORM CONTROLS ===== */
+  .dark-control {
+    background-color: var(--bg-accent) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 8px !important;
+    transition: var(--transition);
+  }
+  
+  .dark-control:hover {
+    border-color: var(--primary) !important;
+  }
+  
+  .Select-control, .Select-menu-outer {
+    background-color: var(--bg-accent) !important;
+    border: 1px solid var(--border) !important;
+  }
+  
+  /* ===== HOVER EFFECTS ===== */
+  .nav-link {
+    transition: var(--transition);
+  }
+  
+  .nav-link:hover {
+    color: var(--primary) !important;
+    transform: translateX(2px);
+  }
+  
+  /* ===== TYPOGRAPHY ===== */
+  h1, h2, h3 {
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    color: var(--text-primary);
+  }
+  
+  .guide {
+    color: var(--text-secondary);
+    line-height: 1.8;
+    opacity: 0.9;
+  }
+  
+  /* ===== SCROLLBAR ===== */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: var(--bg-primary);
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: var(--primary);
+    border-radius: 4px;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-hover);
+  }
+  
+  /* ===== ANIMATIONS ===== */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  .dash-graph {
+    animation: fadeIn 0.5s ease-out forwards;
+  }
+
+
+  /* ===== DROPDOWNS FIX ===== */
+/* Contenedor principal */
+.Select-control {
+    background-color: var(--bg-accent) !important;
+    border-color: var(--border) !important;
+  }
+  
+  /* Texto del item seleccionado */
+  .Select-value-label {
+    color: var(--text-primary) !important;
+  }
+  
+  /* Texto del placeholder */
+  .Select-placeholder {
+    color: var(--text-secondary) !important;
+  }
+  
+  /* Items en el menú desplegable */
+  .Select-option {
+    color: var(--text-primary) !important;
+    background-color: var(--bg-accent) !important;
+  }
+  
+  /* Item seleccionado en el menú */
+  .Select-option.is-selected {
+    background-color: var(--primary) !important;
+    color: white !important;
+  }
+  
+  /* Item con hover */
+  .Select-option.is-focused {
+    background-color: var(--bg-secondary) !important;
+  }
+  
+  /* Flecha del dropdown */
+  .Select-arrow-zone svg {
+    fill: var(--text-primary) !important;
+  }
+  
+  /* Input de búsqueda */
+  .Select-input input {
+    color: var(--text-primary) !important;
+  }
+
+
+  /*DatePicker */
+.dark-datepicker-force,
+.dark-datepicker-force * {
+    background-color: #2a2a2a !important;
+    color: #ffffff !important;
+    border-color: #444 !important;
+}
+
+/* Específicos para el calendario */
+.dark-datepicker-force .DayPicker-Month {
+    background: #333 !important;
+}
+
+.dark-datepicker-force .CalendarDay__selected {
+    background: #979797 !important;
+    border-color: #a5a5a5 !important;
+}
+
+.dark-datepicker-force .DayPicker-NavButton {
+    color: #fff !important;
+}
+
+/* Override para el input */
+.dark-datepicker-force .dash-datepicker-input {
+    background-color: #2a2a2a !important;
+    color: #fff !important;
+    border: 1px solid #444 !important;
+    padding: 8px !important;
+}
