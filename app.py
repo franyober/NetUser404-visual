@@ -8,11 +8,12 @@ from datetime import datetime
 
 
 
+
 app = Dash(__name__, external_stylesheets=["assets/style.css"])
 from assets.fig_layout import my_figlayout
 
 
-api_url = 'http://192.168.192.192:8000'
+api_url = 'http://127.0.0.1:8000'
 #------------------------------------------------------------------------------------------------
 # Obtener lista de bssid únicos desde la API
 
