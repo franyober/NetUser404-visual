@@ -20,6 +20,7 @@ def get_urls_list():
     try:
         r = requests.get(f'{api_url}/pages')
         data = r.json()
+        
         if isinstance(data, dict) and "pages" in data:
             urls = data["pages"]
             return [{"label": url, "value": url} for url in urls]
@@ -27,6 +28,21 @@ def get_urls_list():
             return []
     except requests.exceptions.RequestException:
         return []
+    
+def get_mac_list():
+    try:
+        r = requests.get(f'{api_url}/MAC_list')
+        data = r.json()
+        print(data)
+        
+        if isinstance(data, dict) and "MAC_list" in data:
+            macs = data["MAC_list"]
+            return [{"label": mac, "value": mac} for mac in macs]
+        else:
+            return []
+    except requests.exceptions.RequestException:
+        return []
+
 
 def get_bssid_list():
     try:
@@ -52,7 +68,7 @@ def count_status_codes(date, bssid, url):
     except:
         return []
 #---------------------------------------------------------------------------------------------
-def delays_5min(date, bssid):
+def get_delays(date, bssid):
     
     PARAMS = {"date": date, "bssid": bssid}
     try:
@@ -60,7 +76,7 @@ def delays_5min(date, bssid):
         data = r.json()
         
         # Debug: Verificar estructura
-        print(f"Datos recibidos: {data[:2]}...")  # Muestra primeros 2 elementos
+        
         
         # La API devuelve una lista de diccionarios como muestras
         if isinstance(data, list) and all(isinstance(x, dict) for x in data):
@@ -73,7 +89,7 @@ def delays_5min(date, bssid):
         print(f"Error en API: {str(e)}")
         return []
 #---------------------------------------------------------------------------------------------
-def load_5min(date, bssid, url):
+def get_load(date, bssid, url):
     if not bssid:
         return []
     
@@ -92,7 +108,7 @@ def load_5min(date, bssid, url):
             return [data]  # Convertir a lista para consistencia
         return []
     except Exception as e:
-        print(f"Error en load_5min: {str(e)}")
+        print(f"Error en get_load: {str(e)}")
         return []
 ##--------------------------------------------------------------------------------------------
 def get_download(date, bssid):
@@ -137,6 +153,14 @@ app.layout = dbc.Container(
                     id="sel-urls",
                     options=[],
                     placeholder="Select a URL",
+                    style = {"width": "50%"}
+                ), width=3),
+
+
+                dbc.Col(dcc.Dropdown(
+                    id="sel-MAC",
+                    options=[],
+                    placeholder="Select a MAC",
                     style = {"width": "50%"}
                 ), width=3),
                 
@@ -199,6 +223,14 @@ def update_bssid_options(selected_date):
 )
 def update_urls_options(selected_date):
     return get_urls_list()
+# MAC dinámicamenrte ---------------------------------------------------------------------------------
+
+@app.callback(
+    Output("sel-MAC", "options"),
+    Input("sel-date", "date") 
+)
+def update_macs_options(selected_date):
+    return get_mac_list()
 
 
 # SC---------------------------------------------------------------------------------------------------
@@ -212,24 +244,25 @@ def update_pie_chart(selected_date, selected_bssid, selected_url):
         return go.Figure().update_layout(my_figlayout)
     
     try:
+        # Verificar parámetro faltante antes de llamar a la API
+        if not selected_url:
+            return go.Figure().update_layout(my_figlayout)
+            
         codes = count_status_codes(selected_date, selected_bssid, selected_url)
+        
+        if isinstance(codes, dict) and 'detail' in codes:
+            # Error de API, pero no lo imprimimos para evitar logs confusos
+            return go.Figure().update_layout(my_figlayout)
+            
         if not codes:
             return go.Figure().update_layout(my_figlayout)
             
         df = pd.DataFrame(codes)
-        
-        # Maneja diferentes nombres de columna
-        status_col = 'status' if 'status' in df.columns else 'detail'
-        if 'count' not in df.columns:
-            raise ValueError("Columna 'count' no encontrada")
-        
-        fig = px.pie(df, values="count", names=status_col, title="Códigos de estado")
+        fig = px.pie(df, values="count", names="status", title="Códigos de estado")
         return fig.update_layout(my_figlayout)
         
     except Exception as e:
-        print(f"Error en gráfico de pie: {str(e)}")
         return go.Figure().update_layout(my_figlayout)
-
 
 # LATENCY---------------------------------------------------------------------------------------
 @app.callback(
@@ -238,11 +271,11 @@ def update_pie_chart(selected_date, selected_bssid, selected_url):
 )
 def update_latency_chart(selected_date, selected_bssid):
     if not selected_bssid:
-        fig = px.line(title="Seleccione un BSSID")
-        fig.update_layout(my_figlayout)
+        fig = go.Figure(layout=my_figlayout)
+        fig.update_layout(title="Seleccione un BSSID")
         return fig
         
-    delays = delays_5min(selected_date, selected_bssid)
+    delays = get_delays(selected_date, selected_bssid)
     df = pd.DataFrame(delays)
     
     if df.empty:
@@ -323,7 +356,7 @@ def update_load_chart(selected_date, selected_bssid, selected_url):
     
     try:
         # 1. Obtener datos
-        loads = load_5min(selected_date, selected_bssid, selected_url)
+        loads = get_load(selected_date, selected_bssid, selected_url)
         # 2. Verificar y convertir a DataFrame
         if not loads:
             raise ValueError("No se recibieron datos de carga")
