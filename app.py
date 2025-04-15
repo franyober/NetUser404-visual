@@ -379,7 +379,41 @@ def update_load_chart(selected_date, selected_bssid, selected_url):
         
         if df.empty:
             raise ValueError("No hay datos válidos después de procesamiento")
-        
+        # --- Nuevo: Procesamiento de gaps ---
+        # Ordenar por tiempo
+        df = df.sort_values('time').reset_index(drop=True)
+
+        # Umbral para considerar un gap (5 minutos)
+        threshold = pd.Timedelta(minutes=5)
+
+        # Calcular diferencias de tiempo
+        df['time_diff'] = df['time'].diff()
+
+        # Identificar gaps mayores al umbral
+        gap_indices = df.index[df['time_diff'] > threshold].tolist()
+
+        # Mantener solo columnas esenciales (excluyendo 'hour' y otras)
+        df = df[["time", "load"]].copy()  # <--- ¡Clave! Eliminar columnas no usadas
+
+        # Crear nuevas filas con estructura idéntica
+        new_rows = []
+        for idx in gap_indices:
+            if idx == 0:
+                continue
+            prev_time = df.loc[idx - 1, 'time']
+            new_time = prev_time + threshold
+            new_rows.append({'time': new_time, 'load': None})
+
+        # Insertar nuevos registros (sin columnas adicionales)
+        if new_rows:
+            new_rows_df = pd.DataFrame(new_rows)
+            # Asegurar mismas columnas y tipos
+            new_rows_df = new_rows_df.astype(df.dtypes)  # <--- ¡Corrección final!
+            df = pd.concat([df, new_rows_df], ignore_index=True)
+
+        # Re-ordenar y asegurar tipos
+        df = df.sort_values('time').reset_index(drop=True)
+        # --- Fin de procesamiento de gaps ---
         # 5. Crear gráfico
         fig = go.Figure()
         
@@ -391,7 +425,8 @@ def update_load_chart(selected_date, selected_bssid, selected_url):
             line=dict(color='#00cc96', width=2),
             marker=dict(size=4, color='#0068c9'),
             name="Tiempo de carga (s)",
-            hovertemplate="<b>Hora:</b> %{x|%H:%M:%S}<br><b>Load:</b> %{y:.2f} s<extra></extra>"
+            hovertemplate="<b>Hora:</b> %{x|%H:%M:%S}<br><b>Load:</b> %{y:.2f} s<extra></extra>",
+            connectgaps=False
         ))
         
         # 6. Configuración final (SIN líneas blancas)
@@ -445,70 +480,94 @@ def update_download_chart(selected_date, selected_bssid):
     
     download = get_download(selected_date, selected_bssid)
     df = pd.DataFrame(download)
+    
     if df.empty:
         fig = px.line(title="No hay datos")
         fig.update_layout(my_figlayout)
         return fig
     
-    df["time"] = pd.to_datetime(selected_date + " " + df["hour"], format="%Y-%m-%d %H:%M:%S")
+    # Procesamiento de fecha
+    df["time"] = pd.to_datetime(
+        selected_date + " " + df["hour"], 
+        format="%Y-%m-%d %H:%M:%S",
+        errors="coerce"
+    ).dropna()
 
-    
-    # Crear la figura
+    # --- Procesamiento de gaps ---
+    if not df.empty:
+        # Ordenar y calcular diferencias
+        df = df.sort_values("time").reset_index(drop=True)
+        threshold = pd.Timedelta(minutes=5)
+        df["time_diff"] = df["time"].diff()
+        
+        # Identificar gaps
+        gap_indices = df.index[df["time_diff"] > threshold].tolist()
+        
+        # Mantener solo columnas esenciales
+        df = df[["time", "download"]].copy()
+        
+        # Crear nuevas filas
+        new_rows = []
+        for idx in gap_indices:
+            if idx == 0: continue
+            prev_time = df.loc[idx-1, "time"]
+            new_time = prev_time + threshold
+            new_rows.append({"time": new_time, "download": None})
+        
+        # Insertar gaps
+        if new_rows:
+            new_rows_df = pd.DataFrame(new_rows)
+            new_rows_df = new_rows_df.astype(df.dtypes)  # Mantener tipos de datos
+            df = pd.concat([df, new_rows_df], ignore_index=True)
+        
+        # Reordenar final
+        df = df.sort_values("time").reset_index(drop=True)
+
+    # --- Creación del gráfico ---
     fig = go.Figure()
     
-    # Configuración especial para datasets completos
+    # Línea principal con gaps
     fig.add_trace(go.Scattergl(
         x=df["time"],
         y=df["download"],
         mode='lines',
         line=dict(color='white', width=1),
         showlegend=False,
-        connectgaps=False,  # muestra los huecos como discontinuidades
+        connectgaps=False,
         hovertemplate="<b>Hora:</b> %{x|%H:%M:%S}<br><b>Download:</b> %{y:.2f} s<extra></extra>" 
     ))
     
-    # Marcadores solo visibles al hacer hover/zoom
+    # Marcadores transparentes
     fig.add_trace(go.Scattergl(
         x=df["time"],
         y=df["download"],
         mode='markers',
-        marker=dict(
-            color='black',
-            size=3,
-            opacity=0  # Invisibles por defecto
-        ),
-        visible='legendonly',  # Solo aparecen al interactuar
+        marker=dict(color='black', size=3, opacity=0),
+        visible='legendonly',
         showlegend=False,
-        hovertemplate="<b>Hora:</b> %{x|%H:%M:%S}<br><b>Download:</b> %{y:.2f} s<extra></extra>" 
+        hovertemplate="<b>Hora:</b> %{x|%H:%M:%S}<br><b>Download:</b> %{y:.2f} s<extra></extra>",
+        connectgaps=False
     ))
 
-    # Aplicar layout personalizado
+    # Layout personalizado
     fig.update_layout(
-            my_figlayout,
-            uirevision='constant',
-            hoverdistance=10, # Sensibilidad del hover
-            title="Download Time",
-            xaxis_title="Hora",
-            yaxis_title="Tiempo (ms)",
-            hovermode="x unified",
-
-            xaxis=dict(
+        my_figlayout,
+        title="Download Time",
+        xaxis_title="Hora",
+        yaxis_title="Tiempo (ms)",
+        hovermode="x unified",
+        xaxis=dict(
             type='date',
-            rangeslider=dict(visible=True,
-                             thickness=0.08
-                             ),  # Barra deslizante para navegar en el tiempo
-            range=[df["time"].min(), df["time"].min() + pd.Timedelta(minutes=30)],  # Rango inicial de 30 min
-            # Formato de las etiquetas
+            rangeslider=dict(visible=True, thickness=0.08),
+            range=[df["time"].min(), df["time"].min() + pd.Timedelta(minutes=30)],
             tickformat="%H:%M",
-            # Frecuencia de las marcas
-            dtick=1800000,  # 30 minutos en milisegundos
-            showspikes=False,
-            spikethickness=0
-                     ),
-            yaxis=dict(
-            showspikes=False   
-                     )
-        )
+            dtick=1800000,
+            showspikes=False
+        ),
+        yaxis=dict(showspikes=False),
+        uirevision='constant'
+    )
+    
     return fig
 
 if __name__ == '__main__':
