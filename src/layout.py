@@ -12,38 +12,66 @@ def create_layout():
             
             dbc.Row(
                 [
-                    dbc.Col(dcc.DatePickerSingle(
-                        id="sel-date",
-                        date=hoy,
-                        className="dark-datepicker-force",
-                        style={"background-color": "transparent", "color": "white", "border": "1px solid #444"},
-                    ), width=2),
+                    # Selector de fecha
+                    dbc.Col(
+                        dcc.DatePickerSingle(
+                            id="sel-date",
+                            date=hoy,
+                            className="dark-datepicker-force",
+                            style={
+                                "width": "40%",
+                                "background-color": "transparent",
+                                "color": "white",
+                                
+                            },
+                        ),
+                        width=1,
+                        style={"padding": "0 5px"}
+                    ),
                     
-                    dbc.Col(dcc.Dropdown(
-                        id="sel-bssid",
-                        options=[],
-                        placeholder="Select a Network",
-                        style = {"width": "50%"}
-                    ), width=3),
+                    # Dropdown BSSID
+                    dbc.Col(
+                        dcc.Dropdown(
+                            id="sel-bssid",
+                            options=[],
+                            placeholder="Select a Network",
+                            style={"width": "90%"}
+                        ),
+                        width=3,
+                        style={"padding": "0 5px"}
+                    ),
                     
-                    dbc.Col(dcc.Dropdown(
-                        id="sel-urls",
-                        options=[],
-                        placeholder="Select a URL",
-                        style = {"width": "50%"}
-                    ), width=3),
+                    # Dropdown URL
+                    dbc.Col(
+                        dcc.Dropdown(
+                            id="sel-urls",
+                            options=[],
+                            placeholder="Select a URL",
+                            style={"width": "90%"}
+                        ),
+                        width=4,
+                        style={"padding": "0 5px"}
+                    ),
 
-                    dbc.Col(dcc.Dropdown(
-                        id="sel-MAC",
-                        options=[],
-                        placeholder="Select a MAC",
-                        style = {"width": "50%"}
-                    ), width=3),
+                    # Dropdown MAC
+                    dbc.Col(
+                        dcc.Dropdown(
+                            id="sel-MAC",
+                            options=[],
+                            placeholder="Select a MAC",
+                            style={"width": "100%"}
+                        ),
+                        width=3,
+                        style={"padding": "0 5px"}
+                    ),
                 ],
-                className="mb-4",
-                justify="between",
+                className="g-0",  # Elimina espacios entre columnas
+                justify="start",  # Alineación a la izquierda
+                align="center",
+                style={"margin-bottom": "15px", "row-gap": "10px"}
             ),
             
+            # Sección de gráficos (igual que tu versión original)
             html.Div(
                 [
                     html.Div(

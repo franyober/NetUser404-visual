@@ -7,20 +7,22 @@ import plotly.express as px
 
 def register_download_callbacks(app):
     @app.callback(
-    Output("linegraph-download", "figure"),
-    [Input("sel-date", "date"), Input("sel-bssid", "value")]
+        Output("linegraph-download", "figure"),
+        [Input("sel-date", "date"), 
+         Input("sel-bssid", "value"),
+         Input("sel-MAC", "value")]
 )
-    def update_download_chart(selected_date, selected_bssid):
+    def update_download_chart(selected_date, selected_bssid, selected_mac):
         if not selected_bssid:
             fig = px.line(title="Seleccione un BSSID")
             fig.update_layout(my_figlayout)
             return fig
         
-        download = get_download(selected_date, selected_bssid)
+        download = get_download(selected_date, selected_bssid, selected_mac)
         df = pd.DataFrame(download)
         
         if df.empty:
-            fig = px.line(title="No hay datos")
+            fig = px.line(title="No hay datos para la combinación selecionada")
             fig.update_layout(my_figlayout)
             return fig
         

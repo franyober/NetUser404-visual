@@ -99,7 +99,7 @@ def register_load_callbacks(app):
             my_figlayout,
             title="Load Time",
             xaxis_title="Hora",
-            yaxis_title="Tiempo (ms)",
+            yaxis_title="Tiempo (s)",
             hovermode="x unified",
             
             # Nuevas configuraciones para el eje X

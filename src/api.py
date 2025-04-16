@@ -1,6 +1,6 @@
 import requests
 
-api_url = 'http://192.168.192.192:8000'
+api_url = 'http://127.0.0.1:8000'
 
 def get_urls_list():
     try:
@@ -15,9 +15,12 @@ def get_urls_list():
     except requests.exceptions.RequestException:
         return []
     
-def get_mac_list():
+def get_mac_list(bssid=None):
     try:
-        r = requests.get(f'{api_url}/MAC_list')
+
+        PARAMS = {"bssid": bssid} if bssid else {}
+        endpoint = '/macs_by_bssid' if bssid else '/MAC_list'
+        r = requests.get(f'{api_url}{endpoint}', params=PARAMS)
         data = r.json()
         print(data)
         
@@ -30,9 +33,11 @@ def get_mac_list():
         return []
 
 
-def get_bssid_list():
+def get_bssid_list(mac=None):
     try:
-        r = requests.get(f'{api_url}/networks')
+        PARAMS = {"mac": mac} if mac else {}
+        endpoint = '/bssids_by_mac' if mac else '/networks'
+        r = requests.get(f'{api_url}{endpoint}', params=PARAMS)
         data = r.json()     
         if isinstance(data, dict) and "network" in data:
             bssids = data["network"]
@@ -97,11 +102,11 @@ def get_load(date, bssid, url):
         print(f"Error en get_load: {str(e)}")
         return []
 ##--------------------------------------------------------------------------------------------
-def get_download(date, bssid):
+def get_download(date, bssid, mac = None):
     if not bssid:
         return []
     
-    PARAMS = {"date": date, "bssid": bssid}
+    PARAMS = {"date": date, "bssid": bssid, "mac":mac}
     try:
         r = requests.get(f'{api_url}/metrics/download', params=PARAMS)
         return r.json()
