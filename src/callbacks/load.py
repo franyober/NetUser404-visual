@@ -7,9 +7,12 @@ from api import get_load
 def register_load_callbacks(app):
     @app.callback(
     Output("linegraph-load", "figure"),
-    [Input("sel-date", "date"), Input("sel-bssid", "value"), Input("sel-urls", "value")]
+    [Input("sel-date", "date"), 
+     Input("sel-bssid", "value"), 
+     Input("sel-urls", "value"), 
+     Input("sel-MAC", "value")]
     )
-    def update_load_chart(selected_date, selected_bssid, selected_url):
+    def update_load_chart(selected_date, selected_bssid, selected_url, selected_mac):
         if not selected_bssid or not selected_url:
             fig = go.Figure()
             fig.update_layout(
@@ -22,7 +25,7 @@ def register_load_callbacks(app):
         
         try:
             # 1. Obtener datos
-            loads = get_load(selected_date, selected_bssid, selected_url)
+            loads = get_load(selected_date, selected_bssid, selected_url, selected_mac)
             # 2. Verificar y convertir a DataFrame
             if not loads:
                 raise ValueError("No se recibieron datos de carga")

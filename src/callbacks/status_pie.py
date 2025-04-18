@@ -7,10 +7,13 @@ from api import count_status_codes
 
 def register_status_callbacks(app):
     @app.callback(
-        Output("piegraph-status", "figure"),
-        [Input("sel-date", "date"), Input("sel-bssid", "value"), Input("sel-urls", "value")]
+    Output("piegraph-status", "figure"),
+    [Input("sel-date", "date"), 
+     Input("sel-bssid", "value"), 
+     Input("sel-urls", "value"), 
+     Input("sel-MAC", "value")]
     )
-    def update_pie_chart(selected_date, selected_bssid, selected_url):
+    def update_pie_chart(selected_date, selected_bssid, selected_url, selected_mac):
         if not selected_bssid:
             return go.Figure().update_layout(my_figlayout)
         
@@ -18,7 +21,7 @@ def register_status_callbacks(app):
             if not selected_url:
                 return go.Figure().update_layout(my_figlayout)
                 
-            codes = count_status_codes(selected_date, selected_bssid, selected_url)
+            codes = count_status_codes(selected_date, selected_bssid, selected_url, selected_mac)
             
             if isinstance(codes, dict) and 'detail' in codes:
                 return go.Figure().update_layout(my_figlayout)

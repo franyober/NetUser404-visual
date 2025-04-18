@@ -8,15 +8,17 @@ import plotly.express as px
 def register_latency_callbacks(app):
     @app.callback(
         Output("linegraph-delay", "figure"),
-        [Input("sel-date", "date"), Input("sel-bssid", "value")]
-    )
-    def update_latency_chart(selected_date, selected_bssid):
+        [Input("sel-date", "date"), 
+         Input("sel-bssid", "value"),
+         Input("sel-MAC", "value")]
+)
+    def update_latency_chart(selected_date, selected_bssid, selected_mac):
         if not selected_bssid:
             fig = go.Figure(layout=my_figlayout)
             fig.update_layout(title="Seleccione un BSSID")
             return fig
             
-        delays = get_delays(selected_date, selected_bssid)
+        delays = get_delays(selected_date, selected_bssid, selected_mac)
         df = pd.DataFrame(delays)
         
         if df.empty:

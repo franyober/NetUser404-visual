@@ -1,6 +1,6 @@
 import requests
 
-api_url = 'http://127.0.0.1:8000'
+api_url = 'http://192.168.192.192:8000'
 
 def get_urls_list():
     try:
@@ -15,23 +15,26 @@ def get_urls_list():
     except requests.exceptions.RequestException:
         return []
     
-def get_mac_list(bssid=None):
+def get_mac_list(bssid=None, date=None):
     try:
-
-        PARAMS = {"bssid": bssid} if bssid else {}
-        endpoint = '/macs_by_bssid' if bssid else '/MAC_list'
+        PARAMS = {}
+        endpoint = '/MAC_list'  # Por defecto
+        
+        if bssid:
+            endpoint = '/macs_by_bssid'
+            PARAMS["bssid"] = bssid
+        
+        if date:
+            PARAMS["date"] = date  # Siempre enviar fecha
+        
         r = requests.get(f'{api_url}{endpoint}', params=PARAMS)
         data = r.json()
-        print(data)
         
-        if isinstance(data, dict) and "MAC_list" in data:
-            macs = data["MAC_list"]
-            return [{"label": mac, "value": mac} for mac in macs]
-        else:
-            return []
-    except requests.exceptions.RequestException:
+        return [{"label": mac, "value": mac} for mac in data.get("MAC_list", [])]
+        
+    except Exception as e:
+        print(f"Error en get_mac_list: {str(e)}")
         return []
-
 
 def get_bssid_list(mac=None):
     try:
@@ -48,20 +51,25 @@ def get_bssid_list(mac=None):
         return []
 #----------------------------------------------------------------------------------------------
 # Funciones para obtener datos desde la API
-def count_status_codes(date, bssid, url):
+def count_status_codes(date, bssid, url, mac=None):
     if not bssid:
         return []
     
     PARAMS = {"date": date, "bssid": bssid, "url": url}
+    if mac is not None:  # Solo agregar mac si tiene valor
+        PARAMS["mac"] = mac
+    
     try:
         r = requests.get(f'{api_url}/metrics/status_code', params=PARAMS)
         return r.json()
     except:
         return []
 #---------------------------------------------------------------------------------------------
-def get_delays(date, bssid):
+def get_delays(date, bssid, mac=None):
+    if not bssid:
+        return []
     
-    PARAMS = {"date": date, "bssid": bssid}
+    PARAMS = {"date": date, "bssid": bssid, "mac": mac}
     try:
         r = requests.get(f'{api_url}/metrics/latency', params=PARAMS)
         data = r.json()
@@ -80,11 +88,11 @@ def get_delays(date, bssid):
         print(f"Error en API: {str(e)}")
         return []
 #---------------------------------------------------------------------------------------------
-def get_load(date, bssid, url):
+def get_load(date, bssid, url, mac = None):
     if not bssid:
         return []
     
-    PARAMS = {"date": date, "bssid": bssid, "url": url}
+    PARAMS = {"date": date, "bssid": bssid, "url": url, "mac": mac}
     try:
         r = requests.get(f'{api_url}/metrics/load', params=PARAMS)
         data = r.json()
@@ -106,9 +114,21 @@ def get_download(date, bssid, mac = None):
     if not bssid:
         return []
     
-    PARAMS = {"date": date, "bssid": bssid, "mac":mac}
+    PARAMS = {"date": date, "bssid": bssid, "mac": mac}
     try:
         r = requests.get(f'{api_url}/metrics/download', params=PARAMS)
-        return r.json()
-    except:
-        return []   
+        data = r.json()
+        
+        # Debug: Verificar estructura
+        
+        
+        # La API devuelve una lista de diccionarios como muestras
+        if isinstance(data, list) and all(isinstance(x, dict) for x in data):
+            return data
+        else:
+            print(f"Estructura inesperada: {type(data)} - {data}")
+            return []
+            
+    except Exception as e:
+        print(f"Error en API: {str(e)}")
+        return [] 

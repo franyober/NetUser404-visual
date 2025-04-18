@@ -39,18 +39,25 @@ def register_dropdown_callbacks(app):
     )
     def update_mac(selected_bssid, selected_date, current_mac):
         try:
-            new_options = get_mac_list(bssid=selected_bssid)
+            # 1. Validar parámetros requeridos
+            if not selected_bssid or not selected_date:
+                return [], None  # <--- Limpiar si falta BSSID o fecha
             
-            if not new_options:
-                return [], None
+            # 2. Obtener MACs del API (con BSSID + Fecha)
+            new_options = get_mac_list(bssid=selected_bssid, date=selected_date)
             
+            # 3. Auto-selección si solo hay una opción
+            if len(new_options) == 1:
+                return new_options, new_options[0]["value"]
+            
+            # 4. Mantener selección previa solo si es válida
             valid_macs = [opt["value"] for opt in new_options]
             new_value = current_mac if current_mac in valid_macs else None
             
             return new_options, new_value
         
         except Exception as e:
-            print(f"Error en callback MAC: {str(e)}")
+            print(f"Error en callback de MAC: {str(e)}")
             return [], None
 
     # Callback para URLs
