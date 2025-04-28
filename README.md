@@ -41,4 +41,14 @@ Luego, ejecutar el instalador:
 sudo ./install_visual
 ```
 
+### Desinstalación
+
+Para desinstalar, se recomienda descargar el siguiente script de desinstalación:
+
+```
+wget https://raw.githubusercontent.com/franyober/NetUser404-visual/refs/heads/main/uninstall_visual
+```
+
+Los pasos para ejecutar el script de desinstalación son los mismos que se usó para el de instalación.
+
 
