@@ -132,3 +132,15 @@ def get_download(date, bssid, mac = None):
     except Exception as e:
         print(f"Error en API: {str(e)}")
         return [] 
+##--------------------------------------------------------------------------------------------
+def get_comments(date, bssid, mac=None):
+    try:
+        params = {"date": date, "bssid": bssid}
+        if mac:
+            params["mac"] = mac
+
+        r = requests.get(f"{api_url}/metrics/comments", params=params)
+        return r.json()  # Esperamos lista de diccionarios
+    except Exception as e:
+        print(f"Error en get_comments: {str(e)}")
+        return []

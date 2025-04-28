@@ -109,6 +109,15 @@ def create_layout():
                 ],
                 style={"width": "100%", "margin": "0 auto"}
             ),
+
+            html.Div(
+                dcc.Loading(
+                    html.Div(id="comments-table"), 
+                    type="circle"
+                ),
+                style={"margin-top": "20px"}
+            ),
+
         ],
         fluid=True,
         style={"padding": "10px"}
