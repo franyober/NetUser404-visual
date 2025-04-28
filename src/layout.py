@@ -41,18 +41,6 @@ def create_layout():
                         style={"padding": "0 5px"}
                     ),
                     
-                    # Dropdown URL
-                    dbc.Col(
-                        dcc.Dropdown(
-                            id="sel-urls",
-                            options=[],
-                            placeholder="Select a URL",
-                            style={"width": "90%"}
-                        ),
-                        width=4,
-                        style={"padding": "0 5px"}
-                    ),
-
                     # Dropdown MAC
                     dbc.Col(
                         dcc.Dropdown(
@@ -71,22 +59,9 @@ def create_layout():
                 style={"margin-bottom": "15px", "row-gap": "10px"}
             ),
             
-            # Sección de gráficos (igual que tu versión original)
+            # Sección de gráficos reorganizada
             html.Div(
                 [
-                    html.Div(
-                        [
-                            html.Div(
-                                dcc.Graph(id="piegraph-status"),
-                                style={"width": "49%", "display": "inline-block", "margin-right": "1%", "height": "400px"}
-                            ),
-                            html.Div(
-                                dcc.Graph(id="linegraph-load"),
-                                style={"width": "49%", "display": "inline-block", "margin-left": "1%", "height": "400px"}
-                            ),
-                        ],
-                        style={"margin-bottom": "10px"}
-                    ),
                     html.Div(
                         [
                             html.Div(
@@ -95,6 +70,38 @@ def create_layout():
                             ),
                             html.Div(
                                 dcc.Graph(id="linegraph-download"),
+                                style={"width": "49%", "display": "inline-block", "margin-left": "1%", "height": "400px"}
+                            ),
+                        ],
+                        style={"margin-bottom": "10px"}
+                    ),
+
+                    # Dropdown URL en el centro de las gráficas inferiores
+                    dbc.Row(
+                        dbc.Col(
+                            dcc.Dropdown(
+                                id="sel-urls",
+                                options=[],
+                                placeholder="Select a URL",
+                                style={"width": "90%"}
+                            ),
+                            width=4,
+                            style={"padding": "0 5px", "margin": "0 auto"}
+                        ),
+                        className="g-0",
+                        justify="center",
+                        align="center",
+                        style={"margin-bottom": "15px"}
+                    ),
+
+                    html.Div(
+                        [
+                            html.Div(
+                                dcc.Graph(id="piegraph-status"),
+                                style={"width": "49%", "display": "inline-block", "margin-right": "1%", "height": "400px"}
+                            ),
+                            html.Div(
+                                dcc.Graph(id="linegraph-load"),
                                 style={"width": "49%", "display": "inline-block", "margin-left": "1%", "height": "400px"}
                             ),
                         ]
