@@ -46,7 +46,7 @@ After=network.target
 [Service]
 User=$SERVICE_USER
 WorkingDirectory=$REPO_DIR
-ExecStart=$REPO_DIR/env/bin/python3 app.py
+ExecStart=$REPO_DIR/env/bin/python3 src/app.py
 Restart=always
 RestartSec=5
 
