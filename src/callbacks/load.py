@@ -100,7 +100,7 @@ def register_load_callbacks(app):
             # 6. Configuración final (SIN líneas blancas)
             fig.update_layout(
             my_figlayout,
-            title="Load Time",
+            title="Tiempo de carga de páginas",
             xaxis_title="Hora",
             yaxis_title="Tiempo (s)",
             hovermode="x unified",

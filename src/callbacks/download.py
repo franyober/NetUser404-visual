@@ -92,9 +92,9 @@ def register_download_callbacks(app):
         # Layout personalizado
         fig.update_layout(
             my_figlayout,
-            title="Download Time",
+            title="Velocidad de descarga",
             xaxis_title="Hora",
-            yaxis_title="Tiempo (ms)",
+            yaxis_title="Velocidad (Mb/s)",
             hovermode="x unified",
             xaxis=dict(
                 type='date',

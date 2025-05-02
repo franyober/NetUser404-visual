@@ -58,7 +58,7 @@ def register_latency_callbacks(app):
         
         fig.update_layout(
             my_figlayout,
-            title="Latency (Optimized)",
+            title="Latencia",
             xaxis_title="Hora",
             yaxis_title="Tiempo (ms)",
             hovermode="x unified",
